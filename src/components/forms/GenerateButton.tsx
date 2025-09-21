@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button, Box, Typography } from "@gmzh/react-ui";
 
 interface GenerateButtonProps {
@@ -15,32 +16,31 @@ export const GenerateButton = ({
   isLoading = false,
   disabled = false,
   prompt,
-  style,
 }: GenerateButtonProps) => {
-  const handleClick = () => {
-    console.log("Generate button clicked:", {
-      prompt,
-      style,
-      timestamp: new Date().toISOString(),
-      isValid: prompt.length >= 2 && prompt.length <= 30
-    });
-
-    onGenerate();
-  };
-
   const isDisabled = disabled || isLoading || prompt.length < 2 || prompt.length > 30;
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && !isDisabled) {
+        onGenerate();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onGenerate, isDisabled]);
 
   return (
     <Box className="text-center">
       <Button
-        onClick={handleClick}
+        onClick={onGenerate}
         variant="contained"
         color="primary"
         size="large"
         loading={isLoading}
         loadingText="Generating icons..."
         disabled={isDisabled}
-        className="w-full max-w-md px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full max-w-md px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg  transition-all duration-200 "
       >
         Generate Icons
       </Button>
