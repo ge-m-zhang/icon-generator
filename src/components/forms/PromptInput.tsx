@@ -38,7 +38,7 @@ export const PromptInput = ({
       value: newValue,
       length: newValue.length,
       isValid: !validationError,
-      validationError: validationError || null
+      validationError: validationError || null,
     });
 
     onChange(newValue);

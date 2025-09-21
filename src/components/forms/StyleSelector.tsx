@@ -1,7 +1,7 @@
 "use client";
 
 import { Select, Box, Typography } from "@gmzh/react-ui";
-import { PresetStyleId } from "@/lib/types/style-presets";
+import { PresetStyleId } from "@/lib/types/icon-generator-types";
 import { STYLE_PRESETS } from "@/lib/constants/style-presets";
 
 interface StyleSelectorProps {

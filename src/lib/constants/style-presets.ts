@@ -1,4 +1,4 @@
-import type { PresetStyleId, StylePreset } from "../types/style-presets";
+import type { PresetStyleId, StylePreset } from "../types/icon-generator-types";
 
 export const STYLE_PRESETS: Record<PresetStyleId, StylePreset> = {
   Business: {
