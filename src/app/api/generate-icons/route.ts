@@ -3,123 +3,15 @@ import {
   IconGenerationRequest,
   IconGenerationResponse,
   GeneratedIcon,
-} from "@/lib/types";
+} from "@/lib/types/icon-generator-types";
+import { createPromptEngineeringService } from "@/lib/services/prompt-engineering";
+import { FluxSchnellClient } from "@/lib/services/replicate/flux-schnell-client";
+import {
+  FluxError,
+  FluxSchnellClientConfig,
+} from "@/lib/types/flux-schnell-types";
 
-const ICON_KEYWORDS = [
-  "home",
-  "search",
-  "heart",
-  "star",
-  "user",
-  "bell",
-  "settings",
-  "camera",
-  "music",
-  "mail",
-  "phone",
-  "calendar",
-  "cloud",
-  "download",
-  "upload",
-  "share",
-  "menu",
-  "play",
-  "pause",
-  "stop",
-  "edit",
-  "delete",
-  "save",
-  "folder",
-];
-
-const generateIconItems = (prompt: string): string[] => {
-  const words = prompt
-    .toLowerCase()
-    .split(" ")
-    .filter((word) => word.length > 2);
-  const relevantKeywords = ICON_KEYWORDS.filter((keyword) =>
-    words.some((word) => word.includes(keyword) || keyword.includes(word))
-  );
-
-  // Always return exactly 8 items
-  if (relevantKeywords.length >= 8) {
-    return relevantKeywords.slice(0, 8);
-  }
-
-  // Combine relevant keywords with generic ones to reach 8
-  const combined = [
-    ...relevantKeywords,
-    ...ICON_KEYWORDS.filter((keyword) => !relevantKeywords.includes(keyword)),
-  ];
-  return combined.slice(0, 8);
-};
-
-const getUnsplashImage = async (
-  query: string,
-  seed?: number
-): Promise<string> => {
-  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
-
-  if (!accessKey) {
-    console.warn("UNSPLASH_ACCESS_KEY not found, using Picsum fallback");
-    const imageId = (seed || Math.floor(Math.random() * 1000)) % 1000;
-    return `https://picsum.photos/512/512?random=${imageId}`;
-  }
-
-  try {
-    // Enhanced query for better icon-style results
-    const iconQuery = `${query} symbol minimalist simple clean geometric`;
-
-    const response = await fetch(
-      `https://api.unsplash.com/search/photos?` +
-        `query=${encodeURIComponent(iconQuery)}&` +
-        `per_page=10&` +
-        `orientation=squarish&` +
-        `content_filter=high&` +
-        `order_by=relevance`,
-      {
-        headers: {
-          Authorization: `Client-ID ${accessKey}`,
-          "Accept-Version": "v1",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Unsplash API error: ${response.status} - ${errorText}`);
-      throw new Error(`Unsplash API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log(
-      `Unsplash API: Found ${
-        data.results?.length || 0
-      } results for "${iconQuery}"`
-    );
-
-    if (data.results && data.results.length > 0) {
-      // Use seed to pick a consistent result from the available options
-      const index = seed ? seed % data.results.length : 0;
-      const selectedImage = data.results[index];
-
-      // Use the small size (400x400) for better performance, or regular for quality
-      return selectedImage.urls.small || selectedImage.urls.regular;
-    }
-
-    // Fallback to Picsum if no results
-    console.warn(
-      `No Unsplash results for "${iconQuery}", using Picsum fallback`
-    );
-    const imageId = (seed || Math.floor(Math.random() * 1000)) % 1000;
-    return `https://picsum.photos/512/512?random=${imageId}`;
-  } catch (error) {
-    console.error("Unsplash API error:", error);
-    // Fallback to Picsum on error
-    const imageId = (seed || Math.floor(Math.random() * 1000)) % 1000;
-    return `https://picsum.photos/512/512?random=${imageId}`;
-  }
-};
+// Production-ready icon generation using FluxSchnell
 
 export const POST = async (request: NextRequest) => {
   try {
@@ -133,33 +25,104 @@ export const POST = async (request: NextRequest) => {
       );
     }
 
-    const iconItems = generateIconItems(prompt);
+    // Use the sophisticated prompt engineering service instead of primitive keyword matching
+    // Create service instance server-side where environment variables are available
+    const promptService = createPromptEngineeringService();
+    const iconSet = await promptService.generateIconSet(prompt, style);
     const timestamp = Date.now();
 
-    // Create style-specific query enhancement using object literal lookup
-    const styleModifiers = {
-      Business: "professional minimalist clean badge",
-      Cartoon: "cartoon friendly rounded colorful",
-      ThreeDModel: "3d rendered realistic shiny",
-      Gradient: "gradient smooth modern vibrant",
+    console.log(`🎯 Icon Generation Request:`, {
+      originalPrompt: prompt,
+      style,
+      generatedItems: iconSet.map((icon) => icon.item),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Initialize FluxSchnell client for real image generation
+    const config: FluxSchnellClientConfig = {
+      apiToken: process.env.REPLICATE_API_TOKEN!,
+      maxPollingTimeout: 60000,
+      pollingInterval: 1000,
+      rateLimit: 600,
+      maxRetries: 3,
+      baseRetryDelay: 1000,
+      enableLogging: true,
     };
-    const styleModifier = styleModifiers[style] || "minimal clean";
+    const fluxClient = new FluxSchnellClient(config);
+    console.log(
+      `🚀 FluxSchnell client initialized for ${iconSet.length} icons`
+    );
+
+    // Generate base seed for the entire set to ensure visual consistency
+    const baseSeedString = `${prompt}-${style}-${timestamp}`;
+    const baseSeed =
+      baseSeedString
+        .split("")
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0) % 2147483647;
 
     const images: GeneratedIcon[] = await Promise.all(
-      iconItems.map(async (item, index) => {
-        const query = `${item} ${styleModifier} icon`;
-        const seed = timestamp + index; // Ensure consistent but different images
-        const imageUrl = await getUnsplashImage(query, seed);
-        const downloadUrl = imageUrl; // Same URL for download
+      iconSet.map(async (iconPrompt, index) => {
+        // Create consistent seed variation for each icon in the set
+        // This ensures visual consistency while allowing slight variations
+        const iconSeed = (baseSeed + index * 137) % 2147483647; // 137 is prime for better distribution
 
-        return {
-          id: `icon-${timestamp}-${index}`,
-          item,
-          url: imageUrl,
-          downloadUrl,
-          style,
-          originalPrompt: prompt,
-        };
+        console.log(
+          `🖼️  Generating image ${index + 1}/${iconSet.length}: "${
+            iconPrompt.item
+          }" -> Seed: ${iconSeed}`
+        );
+
+        try {
+          // Generate real image using FluxSchnell with sophisticated prompt engineering
+          const result = await fluxClient.generateImages({
+            prompt: iconPrompt.prompt, // Use sophisticated engineered prompt
+            num_inference_steps: 4, // Optimized for speed and quality
+            aspect_ratio: "1:1", // Perfect for icons
+            output_format: "png", // Best quality for icons
+            go_fast: false, // Prioritize quality for final icons
+            seed: iconSeed, // Ensure consistency across generations
+            requestId: `icon-${timestamp}-${index}`,
+          });
+
+          console.log(
+            `✅ Generated ${result.imageUrls.length} images for "${
+              iconPrompt.item
+            }" (Cost: $${result.cost.toFixed(4)}, Time: ${
+              result.generationTime
+            }ms)`
+          );
+
+          return {
+            id: result.requestId,
+            item: iconPrompt.item,
+            url: result.imageUrls[0], // Use first generated image
+            downloadUrl: result.imageUrls[0], // Same URL for download
+            style,
+            originalPrompt: prompt,
+          };
+        } catch (error) {
+          console.error(
+            `❌ Failed to generate image for "${iconPrompt.item}":`,
+            error
+          );
+
+          // Provide fallback with error context
+          if (error instanceof FluxError) {
+            console.error(
+              `FluxError [${error.code}]: ${error.message} (Request: ${error.requestId})`
+            );
+          }
+
+          // Return error placeholder but don't fail entire request
+          return {
+            id: `icon-${timestamp}-${index}-error`,
+            item: iconPrompt.item,
+            url: "/favicon.ico", // Fallback on error
+            downloadUrl: "/favicon.ico",
+            style,
+            originalPrompt: prompt,
+          };
+        }
       })
     );
 
@@ -169,9 +132,33 @@ export const POST = async (request: NextRequest) => {
       metadata: {
         originalPrompt: prompt,
         style,
-        generatedItems: iconItems,
+        generatedItems: iconSet.map((icon) => icon.item),
       },
     };
+
+    // Calculate generation metrics
+    const successfulGenerations = images.filter(
+      (img) => !img.id.includes("-error")
+    ).length;
+    const failedGenerations = images.length - successfulGenerations;
+    const totalCost = successfulGenerations * 0.003; // $0.003 per image
+
+    console.log(`✅ Icon generation completed:`, {
+      totalRequested: images.length,
+      successful: successfulGenerations,
+      failed: failedGenerations,
+      totalCost: `$${totalCost.toFixed(4)}`,
+      items: iconSet.map((icon) => icon.item),
+      style,
+      success: true,
+    });
+
+    // Get cost tracking from client for additional metrics
+    const costTracker = fluxClient.getCostTracker();
+    console.log(`💰 Session cost summary:`, {
+      sessionTotal: `$${costTracker.totalCost.toFixed(4)}`,
+      sessionImages: costTracker.totalImagesGenerated,
+    });
 
     return NextResponse.json(response);
   } catch (error) {
