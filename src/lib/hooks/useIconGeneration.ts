@@ -1,5 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import { IconGenerationRequest, IconGenerationResponse } from "@/lib/types";
+import {
+  IconGenerationRequest,
+  IconGenerationResponse,
+} from "@/lib/types/icon-generator-types";
 import { apiClient, ApiError } from "@/lib/services/api-client";
 
 export interface UseIconGenerationResult {

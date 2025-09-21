@@ -1,4 +1,7 @@
-import { IconGenerationRequest, IconGenerationResponse } from '@/lib/types';
+import {
+  IconGenerationRequest,
+  IconGenerationResponse,
+} from "@/lib/types/icon-generator-types";
 
 export interface ApiError {
   message: string;
@@ -9,7 +12,7 @@ export interface ApiError {
 export class ApiClient {
   private baseUrl: string;
 
-  constructor(baseUrl: string = '') {
+  constructor(baseUrl: string = "") {
     this.baseUrl = baseUrl;
   }
 
@@ -17,9 +20,10 @@ export class ApiClient {
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
       const error: ApiError = {
-        message: errorData?.error || `HTTP ${response.status}: ${response.statusText}`,
+        message:
+          errorData?.error || `HTTP ${response.status}: ${response.statusText}`,
         status: response.status,
-        code: errorData?.code
+        code: errorData?.code,
       };
       throw error;
     }
@@ -27,20 +31,25 @@ export class ApiClient {
     return response.json();
   }
 
-  async generateIcons(request: IconGenerationRequest): Promise<IconGenerationResponse> {
-    console.log('API Client: Making request to /api/generate-icons with:', request);
+  async generateIcons(
+    request: IconGenerationRequest
+  ): Promise<IconGenerationResponse> {
+    console.log(
+      "API Client: Making request to /api/generate-icons with:",
+      request
+    );
 
     const response = await fetch(`${this.baseUrl}/api/generate-icons`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(request),
     });
 
-    console.log('API Client: Response status:', response.status);
+    console.log("API Client: Response status:", response.status);
     const result = await this.handleResponse<IconGenerationResponse>(response);
-    console.log('API Client: Response data:', result);
+    console.log("API Client: Response data:", result);
     return result;
   }
 }

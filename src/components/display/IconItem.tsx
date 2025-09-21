@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Button, Box, Flex, Typography } from "@gmzh/react-ui";
-import { GeneratedIcon } from "@/lib/types";
+import { GeneratedIcon } from "@/lib/types/icon-generator-types";
 
 interface IconItemProps {
   icon: GeneratedIcon;

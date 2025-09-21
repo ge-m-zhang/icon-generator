@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Box, Typography } from "@gmzh/react-ui";
-import { IconGenerationRequest } from "@/lib/types";
+import { IconGenerationRequest } from "@/lib/types/icon-generator-types";
 import { PresetStyleId } from "@/lib/types/style-presets";
 import { StyleSelector } from "./StyleSelector";
 import { PromptInput } from "./PromptInput";
