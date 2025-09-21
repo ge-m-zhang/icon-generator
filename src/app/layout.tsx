@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@gmzh/react-ui/styles";
 import { Providers } from "@/components/providers";
 
 const geistSans = Geist({
@@ -18,11 +19,11 @@ export const metadata: Metadata = {
   description: "AI-powered icon generator using Replicate",
 };
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <html lang="en">
       <body
@@ -32,4 +33,6 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

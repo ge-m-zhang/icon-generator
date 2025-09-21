@@ -1,21 +1,41 @@
-export default function Home() {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8">
-      <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-4xl sm:text-6xl font-bold mb-6">
-          AI Icon Generator
-        </h1>
-        <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-          Create beautiful, custom icons using the power of AI. Simply describe
-          what you want and watch your ideas come to life.
-        </p>
+"use client";
 
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 shadow-sm">
-          <p className="text-gray-500 dark:text-gray-400">
-            Icon generation interface coming soon...
-          </p>
-        </div>
-      </div>
-    </div>
+import { IconGeneratorForm } from "@/components/forms/IconGeneratorForm";
+import { IconGrid } from "@/components/display/IconGrid";
+import { LoadingStates, EmptyState } from "@/components/common/LoadingStates";
+import { useIconGeneration } from "@/lib/hooks/useIconGeneration";
+import { Box, Flex } from "@gmzh/react-ui";
+
+const Home = () => {
+  const { generateIcons, data, isLoading, isError, error } =
+    useIconGeneration();
+
+  const hasResults = data?.success && data.images.length > 0;
+
+  return (
+    <Box background="gray" className="page-container">
+      <Flex className="content-wrapper">
+        {/* Container 1: Input and Search */}
+        <Box className="input-container">
+          <Box padding="lg">
+            <IconGeneratorForm onSubmit={generateIcons} isLoading={isLoading} />
+          </Box>
+        </Box>
+
+        {/* Container 2: Result Display */}
+        <Box className="result-container">
+          <Box padding="lg">
+            <LoadingStates
+              isLoading={isLoading}
+              error={isError ? error?.message : null}
+            >
+              {hasResults ? <IconGrid icons={data.images} /> : <EmptyState />}
+            </LoadingStates>
+          </Box>
+        </Box>
+      </Flex>
+    </Box>
   );
-}
+};
+
+export default Home;
