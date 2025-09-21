@@ -1,6 +1,6 @@
 {
   "name": "icon-generator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,16 +11,22 @@
   "dependencies": {
     "@gmzh/react-ui": "^0.2.10",
     "@tanstack/react-query": "^5.89.0",
+    "@types/uuid": "^10.0.0",
     "next": "15.5.3",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "openai": "^5.22.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "replicate": "^1.2.0",
+    "uuid": "^13.0.0",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/winston": "^2.4.4",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
     "tailwindcss": "^4",
