@@ -36,6 +36,15 @@ export const PromptInput = ({
 
     setInternalError(validationError);
 
+    const isValid = !validationError && newValue.length >= 2 && newValue.length <= 30;
+
+    console.log('Prompt input changed:', {
+      value: newValue,
+      length: newValue.length,
+      isValid,
+      validationError: validationError || null,
+    });
+
     onChange(newValue);
   };
 

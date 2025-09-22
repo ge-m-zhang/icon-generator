@@ -86,6 +86,7 @@ Rules:
     return cleanItems;
   } catch (error) {
     logger.warn('OpenAI expansion failed, using fallback items', { userInput, error });
+    console.warn('OpenAI expansion failed:', error);
     return FALLBACK_ITEMS;
   }
 }
@@ -125,6 +126,8 @@ export async function generateIconSet(
   colors?: string[],
   config?: IconGenerationConfig
 ): Promise<IconPrompt[]> {
+  console.log(`🎯 Generating icon set for "${userInput}" (${styleId})`);
+
   // Expand to 8 items
   const items = await expandToItems(userInput, config);
 
@@ -134,6 +137,8 @@ export async function generateIconSet(
     prompt: buildPrompt(item, styleId, colors),
     styleId,
   }));
+
+  console.log(`✅ Generated ${iconSet.length} icon prompts`);
 
   return iconSet;
 }

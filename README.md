@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Icon Generator
 
-## Getting Started
+Generate professional icon sets using AI. Create 8 consistent, themed icons in multiple styles using OpenAI and Replicate Flux-Schnell.
 
-First, run the development server:
+🌐 **[Live Demo](https://icon-generator-f7n02c47s-melodys-projects-b4357c60.vercel.app/)** - Try it now!
+
+![AI Icon Styles](public/images/style-examples.png)
+
+## ✨ Features
+
+- **4 Icon Styles**: Business, Cartoon, 3D Model, and Gradient
+- **AI-Powered**: OpenAI GPT-4 + Replicate Flux-Schnell
+- **Professional Quality**: 512×512 PNG format
+- **Consistent Sets**: 8 thematically related icons per request
+- **Type-Safe**: Built with Next.js 15 + TypeScript
+
+## 🚀 Quick Start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Clone and install
+git clone <repository-url>
+cd icon-generator
+pnpm install
+
+# Set up environment variables
+cp .env.example .env
+# Add your OPENAI_API_KEY and REPLICATE_API_TOKEN
+
+# Run
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and start generating!
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📖 Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Enter a prompt (e.g., "office supplies")
+2. Choose a style
+3. Generate your 8-icon set
+4. Download individual icons
 
-## Learn More
+### Styles
 
-To learn more about Next.js, take a look at the following resources:
+- **Business**: Professional glyph icons with colored badges
+- **Cartoon**: Friendly, rounded kawaii-style icons
+- **3D Model**: Photorealistic 3D rendered icons
+- **Gradient**: Modern vector icons with smooth color transitions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework**: Next.js 15 with App Router
+- **UI**: @gmzh/react-ui + Tailwind CSS
+- **AI**: OpenAI GPT-4o-mini + Replicate Flux-Schnell
+- **Language**: TypeScript
+- **Testing**: Jest + Testing Library
 
-## Deploy on Vercel
+## 📚 API
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**POST** `/api/generate-icons`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```typescript
+// Request
+{
+  prompt: string;    // 2-30 characters
+  style: "Business" | "Cartoon" | "ThreeDModel" | "Gradient";
+}
+
+// Response
+{
+  success: boolean;
+  images: GeneratedIcon[];
+  metadata: { originalPrompt: string; style: string; generatedItems: string[]; };
+}
+```
+
+## � Cost
+
+~$0.024 per 8-icon set ($0.003 per image + OpenAI costs)
+
+## 🤝 Development
+
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Deployment**: See [DEPLOYMENT.md](DEPLOYMENT.md)
+- **API Docs**: See [API.md](API.md)
+
+```bash
+pnpm test        # Run tests
+pnpm lint        # Lint code
+pnpm build       # Build for production
+```
