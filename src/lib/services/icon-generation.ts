@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import type { PresetStyleId } from "@/lib/types/icon-generator-types";
 import { STYLE_PRESETS } from "@/lib/constants/style-presets";
+import logger from "@/lib/config/logger";
 
 // Types
 export interface IconPrompt {
@@ -39,7 +40,7 @@ export async function expandToItems(
 ): Promise<string[]> {
   // Use fallback if no OpenAI key or in fallback mode
   if (!config?.openaiApiKey || config.fallbackMode) {
-    console.log(`Using fallback items for "${userInput}"`);
+    logger.warn(`Using fallback items for "${userInput}" - OpenAI not available`);
     return FALLBACK_ITEMS;
   }
 
@@ -81,11 +82,10 @@ Rules:
     }
 
     const cleanItems = items.map((item) => item.trim());
-    console.log(`✅ Expanded "${userInput}" to:`, cleanItems);
+    logger.debug(`Expanded "${userInput}" to items`, { userInput, items: cleanItems });
     return cleanItems;
   } catch (error) {
-    console.warn("OpenAI expansion failed:", error);
-    console.log(`Using fallback items for "${userInput}"`);
+    logger.warn('OpenAI expansion failed, using fallback items', { userInput, error });
     return FALLBACK_ITEMS;
   }
 }

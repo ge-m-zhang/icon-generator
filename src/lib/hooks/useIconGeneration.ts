@@ -4,6 +4,7 @@ import {
   IconGenerationResponse,
 } from "@/lib/types/icon-generator-types";
 import { apiClient, ApiError } from "@/lib/services/api-client";
+import logger from "@/lib/config/logger";
 
 export interface UseIconGenerationResult {
   generateIcons: (request: IconGenerationRequest) => void;
@@ -21,9 +22,9 @@ export const useIconGeneration = (): UseIconGenerationResult => {
       return apiClient.generateIcons(request);
     },
     onError: (error: ApiError) => {
-      console.error("Icon generation failed:", error);
+      logger.error('Icon generation failed in hook', error);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Icons generated successfully
     },
   });
