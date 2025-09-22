@@ -67,7 +67,7 @@ export class FluxSchnellClient {
       const imageUrls = extractImageUrls(output);
 
       if (!imageUrls.length) {
-        throw new Error("No images generated");
+        throw new Error("No valid image URLs could be extracted from the API response");
       }
 
       const cost = imageUrls.length * FluxSchnellClient.COST_PER_IMAGE;

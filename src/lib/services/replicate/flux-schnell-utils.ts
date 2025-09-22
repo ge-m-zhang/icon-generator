@@ -7,6 +7,7 @@ import {
   FluxError,
   FluxErrorCode,
 } from "../../types/flux-schnell-types";
+import logger from "../../config/logger";
 
 // Async utilities
 export const sleep = (ms: number): Promise<void> =>
@@ -57,20 +58,77 @@ export const createFluxError = (
   return new FluxError(message, code, requestId, undefined, error);
 };
 
-// Output processing
+// Output processing  
 export const extractImageUrls = (output: unknown[]): string[] => {
   if (!Array.isArray(output) || !output.length) return [];
 
-  return output.map((item, index) => {
-    if (typeof item === "string") return item;
+  const urls: string[] = [];
 
-    if (item && typeof item === "object" && "url" in item) {
-      const urlItem = item as { url: unknown };
-      if (typeof urlItem.url === "string") return urlItem.url;
+  for (let index = 0; index < output.length; index++) {
+    const item = output[index];
+    
+    try {
+      if (typeof item === "string") {
+        urls.push(item);
+        continue;
+      }
+
+      if (item && typeof item === "object") {
+        const objItem = item as Record<string, unknown>;
+        
+        // Try different possible URL properties that Replicate might use
+        const possibleUrlProps = ['url', 'image_url', 'download_url', 'output_url'];
+        
+        let foundUrl = false;
+        for (const prop of possibleUrlProps) {
+          if (prop in objItem && typeof objItem[prop] === "string") {
+            urls.push(objItem[prop] as string);
+            foundUrl = true;
+            break;
+          }
+        }
+        
+        if (foundUrl) continue;
+        
+        // If object has a direct URL-like property, try to extract it
+        for (const [, value] of Object.entries(objItem)) {
+          if (typeof value === "string" && (
+            value.startsWith("http://") || 
+            value.startsWith("https://") ||
+            value.startsWith("data:")
+          )) {
+            urls.push(value);
+            foundUrl = true;
+            break;
+          }
+        }
+        
+        if (foundUrl) continue;
+
+        // Log the actual object structure for debugging
+        logger.error(`Unable to extract URL from object at index ${index}`, {
+          objectStructure: objItem,
+          objectKeys: Object.keys(objItem),
+          index
+        });
+        
+        // Don't throw - let the calling code handle the empty array
+        continue;
+      }
+
+      logger.error(`Unexpected output format at index ${index}: ${typeof item}`, {
+        item: String(item),
+        index
+      });
+      
+    } catch (error) {
+      logger.error(`Error processing output item at index ${index}`, {
+        error: error instanceof Error ? error.message : String(error),
+        item: String(item),
+        index
+      });
     }
+  }
 
-    throw new Error(
-      `Unexpected output format at index ${index}: ${typeof item}`
-    );
-  });
+  return urls;
 };
