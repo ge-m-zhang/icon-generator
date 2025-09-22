@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Typography } from "@gmzh/react-ui";
-import { GeneratedIcon } from "@/lib/types";
+import { GeneratedIcon } from "@/lib/types/icon-generator-types";
 import { IconItem } from "./IconItem";
 
 interface IconGridProps {

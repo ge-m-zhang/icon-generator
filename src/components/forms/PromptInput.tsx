@@ -8,6 +8,7 @@ interface PromptInputProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   error?: string;
+  onEnterPress?: () => void;
 }
 
 export const PromptInput = ({
@@ -15,6 +16,7 @@ export const PromptInput = ({
   onChange,
   disabled = false,
   error: externalError,
+  onEnterPress,
 }: PromptInputProps) => {
   const [internalError, setInternalError] = useState("");
 
@@ -34,14 +36,21 @@ export const PromptInput = ({
 
     setInternalError(validationError);
 
-    console.log("Prompt input changed:", {
-      value: newValue,
-      length: newValue.length,
-      isValid: !validationError,
-      validationError: validationError || null
-    });
-
     onChange(newValue);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && onEnterPress) {
+      // Only trigger if the input is valid (no errors and meets length requirements)
+      if (
+        !displayError &&
+        value.length >= 2 &&
+        value.length <= 30 &&
+        !disabled
+      ) {
+        onEnterPress();
+      }
+    }
   };
 
   const displayError = externalError || internalError;
@@ -56,6 +65,7 @@ export const PromptInput = ({
       <TextField
         value={value}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
         disabled={disabled}
         placeholder="e.g., hockey, cooking, music"
         helperText={

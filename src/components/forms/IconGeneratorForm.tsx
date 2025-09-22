@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Box, Typography } from "@gmzh/react-ui";
-import { IconGenerationRequest } from "@/lib/types";
-import { PresetStyleId } from "@/lib/types/style-presets";
+import {
+  IconGenerationRequest,
+  PresetStyleId,
+} from "@/lib/types/icon-generator-types";
 import { StyleSelector } from "./StyleSelector";
 import { PromptInput } from "./PromptInput";
 import { GenerateButton } from "./GenerateButton";
@@ -29,11 +31,6 @@ export const IconGeneratorForm = ({
     }
 
     setError("");
-    console.log("Form submission:", {
-      prompt: prompt.trim(),
-      style,
-      timestamp: new Date().toISOString(),
-    });
 
     onSubmit({
       prompt: prompt.trim(),
@@ -97,6 +94,7 @@ Choose your style and describe what you need.`}
           <PromptInput
             value={prompt}
             onChange={handlePromptChange}
+            onEnterPress={handleGenerate}
             disabled={isLoading}
             error={error}
           />

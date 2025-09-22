@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { Button, Box, Flex, Typography } from "@gmzh/react-ui";
-import { GeneratedIcon } from "@/lib/types";
+import { GeneratedIcon } from "@/lib/types/icon-generator-types";
+import { formatIconFilename, detectImageFormat } from "@/lib/utils/file-utils";
 
 interface IconItemProps {
   icon: GeneratedIcon;
@@ -27,37 +28,27 @@ export const IconItem = ({
 
   const sizeConfig = sizeClasses[size];
 
-  // Sanitize filename for download
-  const sanitizeFilename = (filename: string): string => {
-    return filename
-      .replace(/[^a-z0-9\-_]/gi, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "")
-      .toLowerCase();
-  };
-
   const handleDownload = async () => {
     if (onDownload) {
       onDownload(icon);
       return;
     }
 
-    // Default download behavior for 512x512 PNG with sanitized filename
+    // Default download behavior with dynamic format detection
     try {
+      const format = await detectImageFormat(icon.downloadUrl);
       const response = await fetch(icon.downloadUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const sanitizedItem = sanitizeFilename(icon.item);
-      const sanitizedStyle = sanitizeFilename(icon.style);
-      a.download = `${sanitizedItem}-${sanitizedStyle}-512x512.png`;
+      a.download = formatIconFilename(icon.item, icon.style, format);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Download failed:", error);
+      console.error("Failed to download icon:", error);
     }
   };
 

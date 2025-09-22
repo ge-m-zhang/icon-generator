@@ -1,5 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import { IconGenerationRequest, IconGenerationResponse } from "@/lib/types";
+import {
+  IconGenerationRequest,
+  IconGenerationResponse,
+} from "@/lib/types/icon-generator-types";
 import { apiClient, ApiError } from "@/lib/services/api-client";
 
 export interface UseIconGenerationResult {
@@ -15,14 +18,13 @@ export interface UseIconGenerationResult {
 export const useIconGeneration = (): UseIconGenerationResult => {
   const mutation = useMutation({
     mutationFn: (request: IconGenerationRequest) => {
-      console.log("Hook: Starting icon generation with request:", request);
       return apiClient.generateIcons(request);
     },
     onError: (error: ApiError) => {
-      console.error("Icon generation failed:", error);
+      console.error("Icon generation failed in hook", error);
     },
-    onSuccess: (data) => {
-      console.log("Icons generated successfully:", data.images.length, data);
+    onSuccess: () => {
+      // Icons generated successfully
     },
   });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Select, Box, Typography } from "@gmzh/react-ui";
-import { PresetStyleId } from "@/lib/types/style-presets";
+import { PresetStyleId } from "@/lib/types/icon-generator-types";
 import { STYLE_PRESETS } from "@/lib/constants/style-presets";
 
 interface StyleSelectorProps {
@@ -40,11 +40,6 @@ export const StyleSelector = ({
 }: StyleSelectorProps) => {
   const handleChange = (newValue: string) => {
     const selectedStyle = newValue as PresetStyleId;
-    console.log("Style changed:", {
-      previousStyle: value,
-      newStyle: selectedStyle,
-      styleConfig: STYLE_PRESETS[selectedStyle],
-    });
     onChange(selectedStyle);
   };
 
