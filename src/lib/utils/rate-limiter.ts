@@ -25,16 +25,14 @@ export class RateLimiter {
     const now = Date.now();
     const timeSinceLastCall = now - this.lastCall;
 
-    // Update lastCall immediately to prevent race conditions
-    this.lastCall =
-      now +
-      (timeSinceLastCall < this.minInterval
-        ? this.minInterval - timeSinceLastCall
-        : 0);
-
     if (timeSinceLastCall < this.minInterval) {
       const waitTime = this.minInterval - timeSinceLastCall;
+      // Reserve the completion time immediately to prevent race conditions
+      this.lastCall = now + waitTime;
       await new Promise((resolve) => setTimeout(resolve, waitTime));
+    } else {
+      // No wait needed, just update to current time
+      this.lastCall = now;
     }
   }
 }
