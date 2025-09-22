@@ -13,6 +13,9 @@ import {
 import { getValidatedEnvVar } from "@/lib/config/environment";
 import logger from "@/lib/config/logger";
 
+// Maximum value for 32-bit signed integer (2^31 - 1)
+const MAX_32BIT_INT = 2147483647;
+
 // Production-ready icon generation using FluxSchnell
 
 export const POST = async (request: NextRequest) => {
@@ -87,13 +90,13 @@ export const POST = async (request: NextRequest) => {
     const baseSeed =
       baseSeedString
         .split("")
-        .reduce((acc, char) => acc + char.charCodeAt(0), 0) % 2147483647;
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0) % MAX_32BIT_INT;
 
     const images: GeneratedIcon[] = await Promise.all(
       iconSet.map(async (iconPrompt, index) => {
         // Create consistent seed variation for each icon in the set
         // This ensures visual consistency while allowing slight variations
-        const iconSeed = (baseSeed + index * 137) % 2147483647; // 137 is prime for better distribution
+        const iconSeed = (baseSeed + index * 137) % MAX_32BIT_INT; // 137 is prime for better distribution
 
         try {
           // Log the prompt being sent to Replicate
