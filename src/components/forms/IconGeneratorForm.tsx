@@ -31,11 +31,6 @@ export const IconGeneratorForm = ({
     }
 
     setError("");
-    console.log("Form submission:", {
-      prompt: prompt.trim(),
-      style,
-      timestamp: new Date().toISOString(),
-    });
 
     onSubmit({
       prompt: prompt.trim(),

@@ -40,11 +40,6 @@ export const StyleSelector = ({
 }: StyleSelectorProps) => {
   const handleChange = (newValue: string) => {
     const selectedStyle = newValue as PresetStyleId;
-    console.log("Style changed:", {
-      previousStyle: value,
-      newStyle: selectedStyle,
-      styleConfig: STYLE_PRESETS[selectedStyle],
-    });
     onChange(selectedStyle);
   };
 

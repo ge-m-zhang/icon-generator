@@ -16,12 +16,19 @@ export interface IconGenerationConfig {
 
 // Fallback items when OpenAI expansion fails
 const FALLBACK_ITEMS = [
-  "paper clip", "stapler", "pen", "calculator",
-  "folder", "notebook", "scissors", "ruler"
+  "paper clip",
+  "stapler",
+  "pen",
+  "calculator",
+  "folder",
+  "notebook",
+  "scissors",
+  "ruler",
 ];
 
 // Global constraints for all icons
-const GLOBAL_CONSTRAINTS = "512x512 pixels, professional icon design, high clarity, ABSOLUTELY NO TEXT OR LABELS, single object only, clean design, no people, no hands, no multiple objects";
+const GLOBAL_CONSTRAINTS =
+  "512x512 pixels, professional icon design, high clarity, ABSOLUTELY NO TEXT OR LABELS, single object only, clean design, no people, no hands, no multiple objects";
 
 /**
  * Expands user input into 8 specific items using OpenAI or fallback
@@ -56,7 +63,10 @@ Rules:
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Expand "${userInput}" into 8 objects. Return JSON array only.` }
+        {
+          role: "user",
+          content: `Expand "${userInput}" into 8 objects. Return JSON array only.`,
+        },
       ],
       temperature: 0.3,
       max_tokens: 200,
@@ -70,10 +80,9 @@ Rules:
       throw new Error("Invalid response format");
     }
 
-    const cleanItems = items.map(item => item.trim());
+    const cleanItems = items.map((item) => item.trim());
     console.log(`✅ Expanded "${userInput}" to:`, cleanItems);
     return cleanItems;
-
   } catch (error) {
     console.warn("OpenAI expansion failed:", error);
     console.log(`Using fallback items for "${userInput}"`);
@@ -100,12 +109,10 @@ export function buildPrompt(
     GLOBAL_CONSTRAINTS,
     colors?.length ? `use colors: ${colors.join(", ")}` : "",
     `part of cohesive 8-icon set`,
-    `negative: ${style.negatives}, no text, no labels, no words`
+    `negative: ${style.negatives}, no text, no labels, no words`,
   ];
 
-  const prompt = parts.filter(part => part.length > 0).join(", ");
-
-  console.log(`🎨 Built prompt for "${item}" (${styleId})`);
+  const prompt = parts.filter((part) => part.length > 0).join(", ");
   return prompt;
 }
 
@@ -118,18 +125,15 @@ export async function generateIconSet(
   colors?: string[],
   config?: IconGenerationConfig
 ): Promise<IconPrompt[]> {
-  console.log(`🎯 Generating icon set for "${userInput}" (${styleId})`);
-
   // Expand to 8 items
   const items = await expandToItems(userInput, config);
 
   // Build prompts for each item
-  const iconSet = items.map(item => ({
+  const iconSet = items.map((item) => ({
     item,
     prompt: buildPrompt(item, styleId, colors),
     styleId,
   }));
 
-  console.log(`✅ Generated ${iconSet.length} icon prompts`);
   return iconSet;
 }

@@ -1,10 +1,10 @@
-import winston from 'winston';
+import winston from "winston";
 
 const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  level: process.env.NODE_ENV === "production" ? "info" : "debug",
   format: winston.format.combine(
     winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss'
+      format: "YYYY-MM-DD HH:mm:ss",
     }),
     winston.format.errors({ stack: true }),
     winston.format.simple()
@@ -16,22 +16,22 @@ const logger = winston.createLogger({
         winston.format.printf(({ timestamp, level, message, stack }) => {
           return `${timestamp} [${level}]: ${stack || message}`;
         })
-      )
+      ),
     }),
-    new winston.transports.File({ 
-      filename: 'error.log', 
-      level: 'error',
+    new winston.transports.File({
+      filename: "error.log",
+      level: "error",
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.json()
-      )
-    })
-  ]
+      ),
+    }),
+  ],
 });
 
-// If we're not in production, log to the console with colorized output
-if (process.env.NODE_ENV !== 'production') {
-  logger.debug('Logger initialized in development mode');
+// If not in production, log with colorized output
+if (process.env.NODE_ENV !== "production") {
+  logger.debug("Logger initialized in development mode");
 }
 
 export default logger;

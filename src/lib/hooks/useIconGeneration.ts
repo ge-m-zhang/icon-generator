@@ -18,14 +18,13 @@ export interface UseIconGenerationResult {
 export const useIconGeneration = (): UseIconGenerationResult => {
   const mutation = useMutation({
     mutationFn: (request: IconGenerationRequest) => {
-      console.log("Hook: Starting icon generation with request:", request);
       return apiClient.generateIcons(request);
     },
     onError: (error: ApiError) => {
       console.error("Icon generation failed:", error);
     },
     onSuccess: (data) => {
-      console.log("Icons generated successfully:", data.images.length, data);
+      // Icons generated successfully
     },
   });
 

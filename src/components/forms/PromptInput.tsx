@@ -34,12 +34,6 @@ export const PromptInput = ({
 
     setInternalError(validationError);
 
-    console.log("Prompt input changed:", {
-      value: newValue,
-      length: newValue.length,
-      isValid: !validationError,
-      validationError: validationError || null,
-    });
 
     onChange(newValue);
   };
