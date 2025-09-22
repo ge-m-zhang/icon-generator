@@ -64,9 +64,22 @@ export class FluxSchnellClient {
       validateInput(request);
 
       const output = await this.runFluxWithRetry(request);
+      
+      // Enhanced logging before URL extraction
+      console.log(`[FluxClient] Raw API output for request ${requestId}:`, {
+        outputType: typeof output,
+        outputLength: Array.isArray(output) ? output.length : 'not array',
+        outputPreview: JSON.stringify(output, null, 2).substring(0, 500)
+      });
+      
       const imageUrls = extractImageUrls(output);
 
       if (!imageUrls.length) {
+        console.error(`[FluxClient] URL extraction failed for request ${requestId}`, {
+          rawOutput: JSON.stringify(output, null, 2),
+          outputType: typeof output,
+          outputLength: Array.isArray(output) ? output.length : 'not array'
+        });
         throw new Error("No valid image URLs could be extracted from the API response");
       }
 

@@ -1,6 +1,6 @@
 {
   "name": "icon-generator",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "AI-powered icon generator creating professional icon sets using OpenAI and Replicate Flux-Schnell. Generate consistent, themed icons in Business, Cartoon, 3D Model, and Gradient styles.",
   "keywords": [
