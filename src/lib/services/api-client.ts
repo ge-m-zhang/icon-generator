@@ -36,7 +36,7 @@ export class ApiClient {
   async generateIcons(
     request: IconGenerationRequest
   ): Promise<IconGenerationResponse> {
-    console.log('API Client: Starting icon generation', { request });
+    console.log("API Client: Starting icon generation", { request });
 
     const response = await fetch(`${this.baseUrl}/api/generate-icons`, {
       method: "POST",
@@ -46,7 +46,10 @@ export class ApiClient {
       body: JSON.stringify(request),
     });
 
-    console.log('API Client: Received response', { status: response.status, statusText: response.statusText });
+    console.log("API Client: Received response", {
+      status: response.status,
+      statusText: response.statusText,
+    });
 
     const result = await this.handleResponse<IconGenerationResponse>(response);
     return result;
