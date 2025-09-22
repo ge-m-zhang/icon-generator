@@ -2,6 +2,30 @@
   "name": "icon-generator",
   "version": "0.2.1",
   "private": true,
+  "description": "AI-powered icon generator creating professional icon sets using OpenAI and Replicate Flux-Schnell. Generate consistent, themed icons in Business, Cartoon, 3D Model, and Gradient styles.",
+  "keywords": [
+    "ai",
+    "icon-generator",
+    "openai",
+    "replicate",
+    "flux-schnell",
+    "nextjs",
+    "typescript",
+    "react",
+    "tailwind",
+    "icon-design",
+    "ui-design",
+    "graphics"
+  ],
+  "author": "GMZhang",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ge-m-zhang/icon-generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ge-m-zhang/icon-generator/issues"
+  },
+  "homepage": "https://icon-generator-f7n02c47s-melodys-projects-b4357c60.vercel.app/",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
