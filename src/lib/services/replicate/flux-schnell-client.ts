@@ -28,14 +28,27 @@ export class FluxSchnellClient {
   private totalImages = 0;
 
   constructor(config: FluxSchnellClientConfig) {
-    this.replicate = new Replicate({ 
+    this.replicate = new Replicate({
       auth: config.apiToken,
       fetch: (url, init) => {
+        const controller = new AbortController();
+        const timeoutMs = config.timeout ?? env.REPLICATE_API_TIMEOUT;
+
+        // Set up timeout
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+        }, timeoutMs);
+
+        // Use existing signal if provided, otherwise use our controller's signal
+        const signal = init?.signal || controller.signal;
+
         return fetch(url, {
           ...init,
-          signal: AbortSignal.timeout(config.timeout ?? env.REPLICATE_API_TIMEOUT)
+          signal,
+        }).finally(() => {
+          clearTimeout(timeoutId);
         });
-      }
+      },
     });
     this.maxRetries = config.maxRetries ?? 3;
     this.timeout = config.timeout ?? env.REPLICATE_API_TIMEOUT;

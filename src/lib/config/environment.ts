@@ -54,13 +54,13 @@ function getEnvironment(): Environment {
  */
 export function getValidatedEnvVar(key: keyof Environment): string {
   const value = environment[key];
-  if (!value || typeof value !== "string") {
+  if (value === undefined || value === null || value === "") {
     throw new Error(
       `Missing required environment variable: ${key}\n` +
         "Please check your .env.local file."
     );
   }
-  return value;
+  return String(value);
 }
 
 // Create and export the environment configuration
