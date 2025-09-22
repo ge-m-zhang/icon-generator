@@ -141,19 +141,6 @@ const isNearColor = (
 };
 
 /**
- * Server-side version using node-canvas (if available)
- * This would require adding canvas package to dependencies
- */
-export const normalizeBackgroundColorServer = async (
-  imageBuffer: Buffer
-): Promise<Buffer> => {
-  // This would require node-canvas package
-  // For now, we'll just return the original buffer
-  // In a full implementation, we'd use node-canvas or sharp
-  return imageBuffer;
-};
-
-/**
  * Edge-based background detection for more accurate processing
  * Samples pixels from the edges of the image to determine background color
  */
