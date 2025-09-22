@@ -6,17 +6,17 @@ export interface Environment {
   // API Keys
   OPENAI_API_KEY?: string;
   REPLICATE_API_TOKEN?: string;
-  
+
   // API Configuration
   API_TIMEOUT: number;
   REPLICATE_API_TIMEOUT: number;
   OPENAI_MODEL: string;
-  
+
   // App Configuration
   NODE_ENV: string;
   IS_DEVELOPMENT: boolean;
   IS_PRODUCTION: boolean;
-  
+
   // Rate Limiting
   RATE_LIMIT_MS: number;
 }
@@ -25,50 +25,52 @@ export interface Environment {
  * Get environment configuration with defaults
  */
 function getEnvironment(): Environment {
-  const nodeEnv = process.env.NODE_ENV || 'development';
-  
+  const nodeEnv = process.env.NODE_ENV || "development";
+
   return {
     // API Keys
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     REPLICATE_API_TOKEN: process.env.REPLICATE_API_TOKEN,
-    
+
     // API Configuration (timeouts in milliseconds)
-    API_TIMEOUT: parseInt(process.env.API_TIMEOUT || '10000'), // OpenAI API timeout: 10s default
-    REPLICATE_API_TIMEOUT: parseInt(process.env.REPLICATE_API_TIMEOUT || '30000'), // Replicate API timeout: 30s default (image generation takes longer)
-    OPENAI_MODEL: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-    
+    API_TIMEOUT: parseInt(process.env.API_TIMEOUT || "10000"), // OpenAI API timeout: 10s default
+    REPLICATE_API_TIMEOUT: parseInt(
+      process.env.REPLICATE_API_TIMEOUT || "30000"
+    ), // Replicate API timeout: 30s default (image generation takes longer)
+    OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4o-mini",
+
     // App Configuration
     NODE_ENV: nodeEnv,
-    IS_DEVELOPMENT: nodeEnv === 'development',
-    IS_PRODUCTION: nodeEnv === 'production',
-    
+    IS_DEVELOPMENT: nodeEnv === "development",
+    IS_PRODUCTION: nodeEnv === "production",
+
     // Rate Limiting
-    RATE_LIMIT_MS: parseInt(process.env.RATE_LIMIT_MS || '200'),
+    RATE_LIMIT_MS: parseInt(process.env.RATE_LIMIT_MS || "200"),
   };
 }
 
 /**
- * Validate required environment variables
+ * Get validated environment variable for specific service
  */
-function validateEnvironment(env: Environment): void {
-  const required: Array<keyof Environment> = ['OPENAI_API_KEY', 'REPLICATE_API_TOKEN'];
-  const missing = required.filter(key => !env[key]);
-  
-  if (missing.length > 0) {
+export function getValidatedEnvVar(key: keyof Environment): string {
+  const value = environment[key];
+  if (!value || typeof value !== "string") {
     throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}\n` +
-      'Please check your .env.local file.'
+      `Missing required environment variable: ${key}\n` +
+        "Please check your .env.local file."
     );
   }
+  return value;
 }
 
 // Create and export the environment configuration
 const environment = getEnvironment();
 
-// Validate only on server-side
-if (typeof window === 'undefined') {
-  validateEnvironment(environment);
-}
+// Optional: Validate only in production or when explicitly needed
+// Remove global validation to prevent startup crashes
+// if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
+//   validateEnvironment(environment);
+// }
 
 export { environment as env };
 export default environment;

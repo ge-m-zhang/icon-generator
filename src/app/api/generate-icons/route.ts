@@ -10,6 +10,8 @@ import {
   FluxError,
   FluxSchnellClientConfig,
 } from "@/lib/types/flux-schnell-types";
+import { getValidatedEnvVar } from "@/lib/config/environment";
+import logger from "@/lib/config/logger";
 
 // Production-ready icon generation using FluxSchnell
 
@@ -26,34 +28,57 @@ export const POST = async (request: NextRequest) => {
     }
 
     // Use the simplified icon generation service
-    const openaiConfig = {
-      openaiApiKey: process.env.OPENAI_API_KEY,
-      fallbackMode: false
-    };
-    const iconSet = await generateIconSet(prompt, style, undefined, openaiConfig);
+    let openaiConfig;
+    try {
+      const openaiApiKey = getValidatedEnvVar("OPENAI_API_KEY");
+      openaiConfig = {
+        openaiApiKey,
+        fallbackMode: false,
+      };
+    } catch (error) {
+      logger.error("Environment configuration error - Missing OpenAI API key:", error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Service configuration error: Missing OpenAI API key",
+        },
+        { status: 500 }
+      );
+    }
+
+    const iconSet = await generateIconSet(
+      prompt,
+      style,
+      undefined,
+      openaiConfig
+    );
     const timestamp = Date.now();
 
-    console.log(`🎯 Icon Generation Request:`, {
-      originalPrompt: prompt,
-      style,
-      generatedItems: iconSet.map((icon) => icon.item),
-      timestamp: new Date().toISOString(),
-    });
-
     // Initialize FluxSchnell client for real image generation
-    const fluxConfig: FluxSchnellClientConfig = {
-      apiToken: process.env.REPLICATE_API_TOKEN!,
-      maxPollingTimeout: 60000,
-      pollingInterval: 1000,
-      rateLimit: 600,
-      maxRetries: 3,
-      baseRetryDelay: 1000,
-      enableLogging: true,
-    };
-    const fluxClient = new FluxSchnellClient(fluxConfig);
-    console.log(
-      `🚀 FluxSchnell client initialized for ${iconSet.length} icons`
-    );
+    let fluxClient: FluxSchnellClient;
+    try {
+      const replicateApiToken = getValidatedEnvVar("REPLICATE_API_TOKEN");
+
+      const fluxConfig: FluxSchnellClientConfig = {
+        apiToken: replicateApiToken,
+        maxPollingTimeout: 60000,
+        pollingInterval: 1000,
+        rateLimit: 600,
+        maxRetries: 3,
+        baseRetryDelay: 1000,
+        enableLogging: true,
+      };
+      fluxClient = new FluxSchnellClient(fluxConfig);
+    } catch (error) {
+      logger.error("Environment configuration error - Missing Replicate API token:", error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Service configuration error: Missing API token",
+        },
+        { status: 500 }
+      );
+    }
 
     // Generate base seed for the entire set to ensure visual consistency
     const baseSeedString = `${prompt}-${style}-${timestamp}`;
@@ -68,13 +93,10 @@ export const POST = async (request: NextRequest) => {
         // This ensures visual consistency while allowing slight variations
         const iconSeed = (baseSeed + index * 137) % 2147483647; // 137 is prime for better distribution
 
-        console.log(
-          `🖼️  Generating image ${index + 1}/${iconSet.length}: "${
-            iconPrompt.item
-          }" -> Seed: ${iconSeed}`
-        );
-
         try {
+          // Log the prompt being sent to Replicate
+          logger.debug(`Replicate prompt for "${iconPrompt.item}"`, { prompt: iconPrompt.prompt });
+          
           // Generate real image using FluxSchnell with sophisticated prompt engineering
           const result = await fluxClient.generateImages({
             prompt: iconPrompt.prompt, // Use sophisticated engineered prompt
@@ -86,14 +108,6 @@ export const POST = async (request: NextRequest) => {
             requestId: `icon-${timestamp}-${index}`,
           });
 
-          console.log(
-            `✅ Generated ${result.imageUrls.length} images for "${
-              iconPrompt.item
-            }" (Cost: $${result.cost.toFixed(4)}, Time: ${
-              result.generationTime
-            }ms)`
-          );
-
           return {
             id: result.requestId,
             item: iconPrompt.item,
@@ -103,16 +117,11 @@ export const POST = async (request: NextRequest) => {
             originalPrompt: prompt,
           };
         } catch (error) {
-          console.error(
-            `❌ Failed to generate image for "${iconPrompt.item}":`,
-            error
-          );
+          logger.error(`Failed to generate image for "${iconPrompt.item}"`, error);
 
           // Provide fallback with error context
           if (error instanceof FluxError) {
-            console.error(
-              `FluxError [${error.code}]: ${error.message} (Request: ${error.requestId})`
-            );
+            logger.error(`FluxError [${error.code}]: ${error.message} (Request: ${error.requestId})`);
           }
 
           // Return error placeholder but don't fail entire request
@@ -145,7 +154,7 @@ export const POST = async (request: NextRequest) => {
     const failedGenerations = images.length - successfulGenerations;
     const totalCost = successfulGenerations * 0.003; // $0.003 per image
 
-    console.log(`✅ Icon generation completed:`, {
+    logger.info('Icon generation completed', {
       totalRequested: images.length,
       successful: successfulGenerations,
       failed: failedGenerations,
@@ -157,14 +166,14 @@ export const POST = async (request: NextRequest) => {
 
     // Get cost tracking from client for additional metrics
     const costTracker = fluxClient.getCostTracker();
-    console.log(`💰 Session cost summary:`, {
+    logger.info('Session cost summary', {
       sessionTotal: `$${costTracker.totalCost.toFixed(4)}`,
       sessionImages: costTracker.totalImagesGenerated,
     });
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Icon generation error:", error);
+    logger.error('Icon generation failed', error);
     return NextResponse.json(
       {
         success: false,
