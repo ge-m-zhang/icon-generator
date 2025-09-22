@@ -17,20 +17,27 @@ const Home = () => {
       <Flex className="content-wrapper">
         {/* Container 1: Input and Search */}
         <Box className="input-container">
-          <Box padding="lg">
-            <IconGeneratorForm onSubmit={generateIcons} isLoading={isLoading} />
-          </Box>
+          <IconGeneratorForm onSubmit={generateIcons} isLoading={isLoading} />
         </Box>
 
         {/* Container 2: Result Display */}
         <Box className="result-container">
-          <Box padding="lg">
-            <LoadingStates
-              isLoading={isLoading}
-              error={isError ? error?.message : null}
-            >
-              {hasResults ? <IconGrid icons={data.images} /> : <EmptyState />}
-            </LoadingStates>
+          <Box
+            width="full"
+            padding="xl"
+            background="white"
+            rounded="lg"
+            shadow="lg"
+            className="border border-gray-100 min-h-[600px] flex flex-col"
+          >
+            <div className="flex-1 flex flex-col justify-start">
+              <LoadingStates
+                isLoading={isLoading}
+                error={isError ? error?.message : null}
+              >
+                {hasResults ? <IconGrid icons={data.images} /> : <EmptyState />}
+              </LoadingStates>
+            </div>
           </Box>
         </Box>
       </Flex>

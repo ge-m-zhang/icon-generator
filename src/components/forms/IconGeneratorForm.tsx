@@ -51,14 +51,14 @@ export const IconGeneratorForm = ({
     <div className="w-full max-w-2xl mx-auto">
       <Box
         width="full"
-        padding="xl"
+        padding="lg"
         background="white"
         rounded="lg"
         shadow="lg"
         className="border border-gray-100"
       >
         {/* Header Section */}
-        <Box margin="lg" className="text-center">
+        <Box margin="md" className="text-center">
           <Typography
             variant="h2"
             align="center"
@@ -73,13 +73,12 @@ export const IconGeneratorForm = ({
             className="max-w-lg mx-auto leading-relaxed whitespace-pre-line"
             as="div"
           >
-            {`Generate consistent themed icons in 512×512 PNG format.
-Choose your style and describe what you need.`}
+            {`Choose your style and describe what you need.`}
           </Typography>
         </Box>
 
         {/* Style Examples Image */}
-        <Box margin="lg" className="text-center">
+        <Box margin="md" className="text-center">
           <Image
             src="/images/style-examples.png"
             alt="Style Examples - Different icon styles including Business, Cartoon, 3D Model, and Gradient"
@@ -90,7 +89,7 @@ Choose your style and describe what you need.`}
         </Box>
 
         {/* Input Section */}
-        <Box margin="lg" className="space-y-6">
+        <Box margin="md" className="space-y-4">
           <PromptInput
             value={prompt}
             onChange={handlePromptChange}
