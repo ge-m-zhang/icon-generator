@@ -43,7 +43,7 @@ describe('RateLimiter', () => {
       
       // Should not resolve immediately
       jest.advanceTimersByTime(100)
-      expect(waitPromise).not.toHaveReturned
+      expect(waitPromise).not.toHaveReturned()
       
       // Should resolve after remaining time
       jest.advanceTimersByTime(200)
