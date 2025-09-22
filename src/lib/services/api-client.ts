@@ -2,7 +2,6 @@ import {
   IconGenerationRequest,
   IconGenerationResponse,
 } from "@/lib/types/icon-generator-types";
-import logger from "@/lib/config/logger";
 
 export interface ApiError {
   message: string;
@@ -37,7 +36,7 @@ export class ApiClient {
   async generateIcons(
     request: IconGenerationRequest
   ): Promise<IconGenerationResponse> {
-    logger.debug('API Client: Starting icon generation', { request });
+    console.log('API Client: Starting icon generation', { request });
 
     const response = await fetch(`${this.baseUrl}/api/generate-icons`, {
       method: "POST",
@@ -47,7 +46,7 @@ export class ApiClient {
       body: JSON.stringify(request),
     });
 
-    logger.debug('API Client: Received response', { status: response.status, statusText: response.statusText });
+    console.log('API Client: Received response', { status: response.status, statusText: response.statusText });
 
     const result = await this.handleResponse<IconGenerationResponse>(response);
     return result;
