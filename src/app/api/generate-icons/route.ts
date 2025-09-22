@@ -4,7 +4,7 @@ import {
   IconGenerationResponse,
   GeneratedIcon,
 } from "@/lib/types/icon-generator-types";
-import { createPromptEngineeringService } from "@/lib/services/prompt-engineering";
+import { generateIconSet } from "@/lib/services/icon-generation";
 import { FluxSchnellClient } from "@/lib/services/replicate/flux-schnell-client";
 import {
   FluxError,
@@ -25,10 +25,12 @@ export const POST = async (request: NextRequest) => {
       );
     }
 
-    // Use the sophisticated prompt engineering service instead of primitive keyword matching
-    // Create service instance server-side where environment variables are available
-    const promptService = createPromptEngineeringService();
-    const iconSet = await promptService.generateIconSet(prompt, style);
+    // Use the simplified icon generation service
+    const openaiConfig = {
+      openaiApiKey: process.env.OPENAI_API_KEY,
+      fallbackMode: false
+    };
+    const iconSet = await generateIconSet(prompt, style, undefined, openaiConfig);
     const timestamp = Date.now();
 
     console.log(`🎯 Icon Generation Request:`, {
@@ -39,7 +41,7 @@ export const POST = async (request: NextRequest) => {
     });
 
     // Initialize FluxSchnell client for real image generation
-    const config: FluxSchnellClientConfig = {
+    const fluxConfig: FluxSchnellClientConfig = {
       apiToken: process.env.REPLICATE_API_TOKEN!,
       maxPollingTimeout: 60000,
       pollingInterval: 1000,
@@ -48,7 +50,7 @@ export const POST = async (request: NextRequest) => {
       baseRetryDelay: 1000,
       enableLogging: true,
     };
-    const fluxClient = new FluxSchnellClient(config);
+    const fluxClient = new FluxSchnellClient(fluxConfig);
     console.log(
       `🚀 FluxSchnell client initialized for ${iconSet.length} icons`
     );

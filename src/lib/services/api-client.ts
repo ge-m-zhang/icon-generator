@@ -21,7 +21,7 @@ export class ApiClient {
       const errorData = await response.json().catch(() => null);
       const error: ApiError = {
         message:
-          errorData?.error || `HTTP ${response.status}: ${response.statusText}`,
+          errorData?.error || errorData?.message || `HTTP ${response.status}: ${response.statusText}`,
         status: response.status,
         code: errorData?.code,
       };
@@ -31,13 +31,8 @@ export class ApiClient {
     return response.json();
   }
 
-  async generateIcons(
-    request: IconGenerationRequest
-  ): Promise<IconGenerationResponse> {
-    console.log(
-      "API Client: Making request to /api/generate-icons with:",
-      request
-    );
+  async generateIcons(request: IconGenerationRequest): Promise<IconGenerationResponse> {
+    console.log("API Client: Generating icons with request:", request);
 
     const response = await fetch(`${this.baseUrl}/api/generate-icons`, {
       method: "POST",
@@ -47,9 +42,9 @@ export class ApiClient {
       body: JSON.stringify(request),
     });
 
-    console.log("API Client: Response status:", response.status);
+    console.log(`API Client: Response status: ${response.status}`);
     const result = await this.handleResponse<IconGenerationResponse>(response);
-    console.log("API Client: Response data:", result);
+    console.log(`API Client: Generated ${result.images?.length || 0} icons`);
     return result;
   }
 }
