@@ -68,11 +68,5 @@ export function getValidatedEnvVar<K extends keyof Environment>(
 // Create and export the environment configuration
 const environment = getEnvironment();
 
-// Optional: Validate only in production or when explicitly needed
-// Remove global validation to prevent startup crashes
-// if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
-//   validateEnvironment(environment);
-// }
-
 export { environment as env };
 export default environment;

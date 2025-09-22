@@ -15,7 +15,7 @@ export const detectImageFormat = async (
 
   try {
     // First try to detect from URL extension (only PNG/JPG supported)
-    const urlFormat = url.toLowerCase().match(/\.(png|jpg|jpeg)(\?|$)/);
+    const urlFormat = url.toLowerCase().match(/\.(png|jpg|jpeg)(\?.*)?$/);
     if (urlFormat) {
       return urlFormat[1] === "jpeg" ? "jpg" : (urlFormat[1] as "png" | "jpg");
     }
