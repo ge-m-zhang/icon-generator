@@ -66,7 +66,15 @@ export const extractImageUrls = (output: unknown[]): string[] => {
 
     if (item && typeof item === "object" && "url" in item) {
       const urlItem = item as { url: unknown };
-      if (typeof urlItem.url === "function") return urlItem.url();
+      if (typeof urlItem.url === "function") {
+        if (urlItem.url.length === 0) {
+          return urlItem.url();
+        } else {
+          throw new Error(
+            `url property at index ${index} is a function that requires arguments`
+          );
+        }
+      }
       if (typeof urlItem.url === "string") return urlItem.url;
     }
 
