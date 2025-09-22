@@ -150,7 +150,7 @@ export const extractImageUrls = (output: unknown[]): string[] => {
         }
 
         // Method 2: Check if it has file-like properties but isn't a File instance
-        if ('type' in objItem && 'size' in objItem && !item.constructor.name.includes('File')) {
+        if ('type' in objItem && 'size' in objItem && !(item instanceof File)) {
           logger.debug(`Found file-like object at index ${index}`, { type: objItem.type, size: objItem.size });
 
           // Try to create object URL if it has the stream/arrayBuffer methods
