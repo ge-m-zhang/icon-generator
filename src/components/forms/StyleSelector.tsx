@@ -2,7 +2,6 @@
 
 import { Select, Box, Typography } from "@gmzh/react-ui";
 import { PresetStyleId } from "@/lib/types/icon-generator-types";
-import { STYLE_PRESETS } from "@/lib/constants/style-presets";
 
 interface StyleSelectorProps {
   value: PresetStyleId;
@@ -11,11 +10,6 @@ interface StyleSelectorProps {
 }
 
 const styleOptions = [
-  {
-    value: "Business" as PresetStyleId,
-    label: "Business",
-    description: "Professional white glyphs on circular badges",
-  },
   {
     value: "Cartoon" as PresetStyleId,
     label: "Cartoon",

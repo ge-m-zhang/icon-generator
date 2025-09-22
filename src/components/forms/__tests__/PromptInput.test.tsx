@@ -81,7 +81,7 @@ describe('PromptInput', () => {
       
       expect(screen.getByText('What icons do you need?')).toBeInTheDocument()
       expect(screen.getByTestId('prompt-input')).toBeInTheDocument()
-      expect(screen.getByPlaceholderText('e.g., hockey, cooking, music')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('e.g., hockey, dog, cooking')).toBeInTheDocument()
     })
 
     it('should show character count in helper text', () => {

@@ -23,7 +23,7 @@ body {
   padding: 1rem;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .content-wrapper {

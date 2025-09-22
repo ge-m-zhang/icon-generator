@@ -4,6 +4,8 @@ import Image from "next/image";
 import { Button, Box, Flex, Typography } from "@gmzh/react-ui";
 import { GeneratedIcon } from "@/lib/types/icon-generator-types";
 import { formatIconFilename, detectImageFormat } from "@/lib/utils/file-utils";
+import { normalizeBackgroundColorAdvanced } from "@/lib/utils/image-processing";
+import { useState, useEffect } from "react";
 
 interface IconItemProps {
   icon: GeneratedIcon;
@@ -20,6 +22,9 @@ export const IconItem = ({
   showLabel = true,
   showDownload = true,
 }: IconItemProps) => {
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const sizeClasses = {
     small: { width: 96, height: 96, className: "w-24 h-24" },
     medium: { width: 128, height: 128, className: "w-32 h-32" },
@@ -28,25 +33,62 @@ export const IconItem = ({
 
   const sizeConfig = sizeClasses[size];
 
+  // Process the image to normalize background color
+  useEffect(() => {
+    const processImage = async () => {
+      if (!icon.url || icon.url === "/favicon.ico") {
+        // Skip processing for error placeholders
+        return;
+      }
+
+      setIsProcessing(true);
+      try {
+        const normalizedUrl = await normalizeBackgroundColorAdvanced(icon.url);
+        setProcessedImageUrl(normalizedUrl);
+      } catch (error) {
+        console.warn(`Failed to process background for ${icon.item}:`, error);
+        // Use original image if processing fails
+        setProcessedImageUrl(icon.url);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    processImage();
+  }, [icon.url, icon.item]);
+
   const handleDownload = async () => {
     if (onDownload) {
       onDownload(icon);
       return;
     }
 
-    // Default download behavior with dynamic format detection
+    // Use processed image for download if available, otherwise use original
+    const downloadUrl = processedImageUrl || icon.downloadUrl;
+
     try {
-      const format = await detectImageFormat(icon.downloadUrl);
-      const response = await fetch(icon.downloadUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = formatIconFilename(icon.item, icon.style, format);
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      if (processedImageUrl) {
+        // Download the processed data URL directly
+        const a = document.createElement("a");
+        a.href = processedImageUrl;
+        a.download = formatIconFilename(icon.item, icon.style, "png");
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        // Default download behavior with dynamic format detection
+        const format = await detectImageFormat(downloadUrl);
+        const response = await fetch(downloadUrl);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = formatIconFilename(icon.item, icon.style, format);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }
     } catch (error) {
       console.error("Failed to download icon:", error);
     }
@@ -77,15 +119,21 @@ export const IconItem = ({
           rounded="md"
           background="white"
         >
-          <Image
-            src={icon.url}
-            alt={`${icon.item} icon in ${icon.style} style`}
-            width={sizeConfig.width}
-            height={sizeConfig.height}
-            className={`${sizeConfig.className} object-contain`}
-            loading="lazy"
-            sizes={`${sizeConfig.width}px`}
-          />
+          {isProcessing ? (
+            <div className={`${sizeConfig.className} flex items-center justify-center bg-gray-100`}>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <Image
+              src={processedImageUrl || icon.url}
+              alt={`${icon.item} icon in ${icon.style} style`}
+              width={sizeConfig.width}
+              height={sizeConfig.height}
+              className={`${sizeConfig.className} object-contain`}
+              loading="lazy"
+              sizes={`${sizeConfig.width}px`}
+            />
+          )}
         </Box>
       </Box>
 

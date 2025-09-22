@@ -17,19 +17,15 @@ export interface IconGenerationConfig {
 
 // Fallback items when OpenAI expansion fails
 const FALLBACK_ITEMS = [
-  "paper clip",
-  "stapler",
-  "pen",
-  "calculator",
-  "folder",
-  "notebook",
-  "scissors",
-  "ruler",
+  "star",
+  "heart",
+  "circle",
+  "triangle",
+  "square",
+  "diamond",
+  "arrow",
+  "leaf",
 ];
-
-// Global constraints for all icons
-const GLOBAL_CONSTRAINTS =
-  "512x512 pixels, professional icon design, high clarity, ABSOLUTELY NO TEXT OR LABELS, single object only, clean design, no people, no hands, no multiple objects";
 
 /**
  * Expands user input into 8 specific items using OpenAI or fallback
@@ -40,7 +36,12 @@ export async function expandToItems(
 ): Promise<string[]> {
   // Use fallback if no OpenAI key or in fallback mode
   if (!config?.openaiApiKey || config.fallbackMode) {
-    logger.warn(`Using fallback items for "${userInput}" - OpenAI not available`);
+    logger.info(
+      `🔄 Using fallback items for "${userInput}" - ${
+        !config?.openaiApiKey ? "No OpenAI API key" : "Fallback mode enabled"
+      }`
+    );
+    console.log(`🔄 Using fallback items for "${userInput}":`, FALLBACK_ITEMS);
     return FALLBACK_ITEMS;
   }
 
@@ -50,7 +51,7 @@ export async function expandToItems(
     const systemPrompt = `Convert the user input into exactly 8 concrete, physical objects that would make good icons.
 
 Examples:
-Input: "office supplies" → ["paper clip", "stapler", "pen", "calculator", "folder", "notebook", "scissors", "ruler"]
+Input: "shapes" → ["star", "heart", "circle", "triangle", "square", "diamond", "arrow", "leaf"]
 Input: "sports" → ["ball", "trophy", "whistle", "stopwatch", "medal", "helmet", "shoes", "goal"]
 
 Rules:
@@ -82,39 +83,121 @@ Rules:
     }
 
     const cleanItems = items.map((item) => item.trim());
-    logger.debug(`Expanded "${userInput}" to items`, { userInput, items: cleanItems });
+    logger.debug(`Expanded "${userInput}" to items`, {
+      userInput,
+      items: cleanItems,
+    });
     return cleanItems;
   } catch (error) {
-    logger.warn('OpenAI expansion failed, using fallback items', { userInput, error });
-    console.warn('OpenAI expansion failed:', error);
+    logger.warn("OpenAI expansion failed, using fallback items", {
+      userInput,
+      error,
+    });
+    console.warn(`⚠️ OpenAI expansion failed for "${userInput}":`, error);
+    console.log(`🔄 Using fallback items:`, FALLBACK_ITEMS);
     return FALLBACK_ITEMS;
   }
 }
 
-/**
- * Builds a complete prompt for a specific item and style
- */
-export function buildPrompt(
-  item: string,
-  styleId: PresetStyleId,
-  colors?: string[]
-): string {
-  const style = STYLE_PRESETS[styleId];
-  if (!style) {
-    throw new Error(`Unknown style: ${styleId}`);
+// Layer 1: Global prompt construction
+class GlobalPromptLayer {
+  static getBaseRequirements(): string {
+    return "CRITICAL: light grey background #F5F5F5 EXACTLY - NO OTHER BACKGROUND COLORS ALLOWED, perfectly centered, 512x512 format, professional icon design, MANDATORY CONSISTENT BACKGROUND COLOR #F5F5F5 across ALL icons, FORCE light grey canvas #F5F5F5";
   }
 
-  const parts = [
-    `${item} icon`,
-    style.prompt,
-    GLOBAL_CONSTRAINTS,
-    colors?.length ? `use colors: ${colors.join(", ")}` : "",
-    `part of cohesive 8-icon set`,
-    `negative: ${style.negatives}, no text, no labels, no words`,
-  ];
+  static getGlobalNegatives(): string {
+    return "NO text, NO labels, NO words, NO letters, NO numbers, NO writing, NO size inconsistencies, NO background variations, NO different background colors, NO white background, NO beige background, NO transparent background, NO colored backgrounds, ABSOLUTELY NO background variations, STRICTLY #F5F5F5 background ONLY";
+  }
 
-  const prompt = parts.filter((part) => part.length > 0).join(", ");
-  return prompt;
+  static getSizeNormalization(item: string): string {
+    return `normalize ${item} to standard icon proportions within style group, consistent visual size across same style icons, ignore natural object size differences`;
+  }
+}
+
+// Layer 2: Style-specific prompt construction
+class StylePromptLayer {
+  static getStyleVisuals(styleId: PresetStyleId): string {
+    const styleSpecs = STYLE_PRESETS[styleId];
+    if (!styleSpecs) {
+      throw new Error(`Unknown style: ${styleId}`);
+    }
+    return styleSpecs.prompt;
+  }
+
+  static getStyleNegatives(styleId: PresetStyleId): string {
+    const styleSpecs = STYLE_PRESETS[styleId];
+    if (!styleSpecs) {
+      throw new Error(`Unknown style: ${styleId}`);
+    }
+    return styleSpecs.negatives;
+  }
+
+  static getStyleSpecificRules(styleId: PresetStyleId): string {
+    switch (styleId) {
+      case "Cartoon":
+        return "CRITICAL: consistent item size (75% of canvas) across ALL Cartoon icons, same kawaii proportions, same rounded style, NO size variations within Cartoon style";
+      case "ThreeDModel":
+        return "CRITICAL: consistent item size (70% of canvas) across ALL 3D icons, uniform 3D lighting and depth, same rendering quality, NO size variations within 3D style";
+      case "Gradient":
+        return "CRITICAL: consistent item size (70% of canvas) across ALL Gradient icons, identical gradient direction and color stops, NO size variations within Gradient style";
+      default:
+        return "consistent sizing within style group";
+    }
+  }
+}
+
+// Layer 3: Individual item construction
+class ItemPromptLayer {
+  static getItemSpecification(item: string): string {
+    return `single ${item} icon, realistic object representation, show actual ${item} structure`;
+  }
+
+  static getItemSpecificAdjustments(item: string): string {
+    // Handle any item-specific edge cases or adjustments
+    return `focus on ${item} essential characteristics, maintain object clarity`;
+  }
+}
+
+/**
+ * Builds a complete prompt for a specific item and style using 3-layer composition
+ */
+export function buildPrompt(item: string, styleId: PresetStyleId): string {
+  // Layer 3: Individual item requirements
+  const itemSpec = ItemPromptLayer.getItemSpecification(item);
+  const itemAdjustments = ItemPromptLayer.getItemSpecificAdjustments(item);
+
+  // Layer 2: Style-specific requirements
+  const styleVisuals = StylePromptLayer.getStyleVisuals(styleId).replace(
+    "{ITEM}",
+    item
+  );
+  const styleRules = StylePromptLayer.getStyleSpecificRules(styleId);
+
+  // Layer 1: Global requirements
+  const globalBase = GlobalPromptLayer.getBaseRequirements();
+  const sizeNorm = GlobalPromptLayer.getSizeNormalization(item);
+
+  // Compose positive prompt
+  const positivePrompt = [
+    itemSpec,
+    itemAdjustments,
+    styleVisuals,
+    styleRules,
+    globalBase,
+    sizeNorm,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  // Compose negative prompt
+  const negativePrompt = [
+    GlobalPromptLayer.getGlobalNegatives(),
+    StylePromptLayer.getStyleNegatives(styleId),
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  return `${positivePrompt}, NEGATIVE: ${negativePrompt}`;
 }
 
 /**
@@ -123,7 +206,6 @@ export function buildPrompt(
 export async function generateIconSet(
   userInput: string,
   styleId: PresetStyleId,
-  colors?: string[],
   config?: IconGenerationConfig
 ): Promise<IconPrompt[]> {
   console.log(`🎯 Generating icon set for "${userInput}" (${styleId})`);
@@ -134,7 +216,7 @@ export async function generateIconSet(
   // Build prompts for each item
   const iconSet = items.map((item) => ({
     item,
-    prompt: buildPrompt(item, styleId, colors),
+    prompt: buildPrompt(item, styleId),
     styleId,
   }));
 

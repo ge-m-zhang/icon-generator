@@ -31,20 +31,23 @@ describe('RateLimiter', () => {
 
     it('should wait minimum interval between calls', async () => {
       const rateLimiter = new RateLimiter({ minInterval: 500 })
-      
+
       // First call
       await rateLimiter.wait()
-      
+
       // Simulate some time passing (less than minimum interval)
       jest.advanceTimersByTime(200)
-      
+
       // Second call should wait for remaining time
       const waitPromise = rateLimiter.wait()
-      
-      // Should not resolve immediately
+
+      // Should not resolve immediately - check if still pending
       jest.advanceTimersByTime(100)
-      expect(waitPromise).not.toHaveReturned()
-      
+      let isResolved = false
+      waitPromise.then(() => { isResolved = true })
+      await Promise.resolve() // Allow microtasks to run
+      expect(isResolved).toBe(false)
+
       // Should resolve after remaining time
       jest.advanceTimersByTime(200)
       await waitPromise
