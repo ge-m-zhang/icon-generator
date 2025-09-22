@@ -69,7 +69,9 @@ export const extractImageUrls = (output: unknown[]): string[] => {
     outputLength: output.length,
     outputType: typeof output,
     isArray: Array.isArray(output),
-    rawOutput: JSON.stringify(output, null, 2)
+
+    // The JSON.stringify call on the raw output could be expensive for large outputs and may cause performance issues or memory problems. 
+    rawOutputPreview: JSON.stringify(output.slice(0, 3), null, 2).substring(0, 1000) + (output.length > 3 ? '... (truncated)' : '')
   });
 
   const urls: string[] = [];
