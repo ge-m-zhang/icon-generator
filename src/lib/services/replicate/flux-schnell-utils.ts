@@ -69,9 +69,35 @@ export const extractImageUrls = (output: unknown[]): string[] => {
     outputLength: output.length,
     outputType: typeof output,
     isArray: Array.isArray(output),
+    itemTypes: output.map((item, i) => ({ index: i, type: typeof item, constructor: item?.constructor?.name, isString: typeof item === 'string' })),
 
     // The JSON.stringify call on the raw output could be expensive for large outputs and may cause performance issues or memory problems. 
     rawOutputPreview: JSON.stringify(output.slice(0, 3), null, 2).substring(0, 1000) + (output.length > 3 ? '... (truncated)' : '')
+  });
+
+  // ENHANCED DEBUGGING: Log each item's properties in detail
+  output.forEach((item, index) => {
+    if (item && typeof item === 'object') {
+      logger.debug(`DETAILED object analysis at index ${index}`, {
+        constructorName: item.constructor?.name,
+        objectKeys: Object.keys(item),
+        objectEntries: Object.entries(item).map(([key, value]) => ({ 
+          key, 
+          valueType: typeof value, 
+          valuePreview: String(value).substring(0, 100) 
+        })),
+        hasToString: typeof item.toString === 'function',
+        toStringResult: (() => {
+          try {
+            const str = String(item);
+            return { success: true, result: str, isDefault: str === '[object Object]' };
+          } catch (e) {
+            return { success: false, error: String(e) };
+          }
+        })(),
+        index
+      });
+    }
   });
 
   const urls: string[] = [];
@@ -133,6 +159,71 @@ export const extractImageUrls = (output: unknown[]): string[] => {
             }
           } catch (error) {
             logger.debug(`Failed to extract URL from FileOutput at index ${index}`, { error });
+          }
+
+          // Fallback: Try to access the URL property directly on FileOutput
+          try {
+            // @ts-expect-error - FileOutput might have url property
+            const fileUrl = item.url || item.href || item.toString();
+            if (typeof fileUrl === 'string' && (fileUrl.startsWith('http') || fileUrl.includes('replicate'))) {
+              logger.debug(`FileOutput fallback URL extraction at index ${index}`, { url: fileUrl });
+              urls.push(fileUrl);
+              continue;
+            }
+          } catch (error) {
+            logger.debug(`FileOutput fallback failed at index ${index}`, { error });
+          }
+        }
+
+        // Method 1.5: Handle any object that looks like a FileOutput/URL container
+        if (typeof item === 'object' && item !== null) {
+          // Try common Replicate response patterns
+          const replicatePatterns = [
+            // Try toString() first for any object that might have a custom toString
+            () => {
+              try {
+                const str = String(item);
+                if (str !== '[object Object]' && (str.startsWith('http') || str.includes('replicate'))) {
+                  return str;
+                }
+              } catch {}
+              return null;
+            },
+            // Try valueOf() 
+            () => {
+              try {
+                const val = item.valueOf?.();
+                if (typeof val === 'string' && (val.startsWith('http') || val.includes('replicate'))) {
+                  return val;
+                }
+              } catch {}
+              return null;
+            },
+            // Try direct property access
+            () => {
+              // @ts-expect-error - URL properties may not exist on object
+              return item.url || item.href || item.src || item.link || item.uri || null;
+            }
+          ];
+
+          let foundUrl = false;
+          for (const pattern of replicatePatterns) {
+            try {
+              const url = pattern();
+              if (url && typeof url === 'string' && (url.startsWith('http') || url.includes('replicate'))) {
+                logger.debug(`Found URL using pattern at index ${index}`, { url });
+                urls.push(url);
+                foundUrl = true;
+                break;
+              }
+            } catch (error) {
+              logger.debug(`Pattern failed at index ${index}`, { error });
+            }
+          }
+          
+          // If we found a URL above, continue to next item
+          if (foundUrl) {
+            continue;
           }
         }
 
@@ -200,15 +291,54 @@ export const extractImageUrls = (output: unknown[]): string[] => {
         }
 
         if (!foundUrl) {
-          logger.error(`Could not extract URL from object at index ${index}`, {
-            objectKeys: Object.keys(objItem),
-            constructorName: item.constructor?.name,
-            isFile: item instanceof File,
-            hasType: 'type' in objItem,
-            hasSize: 'size' in objItem,
-            hasStream: 'stream' in objItem,
-            index
-          });
+          // Last resort: Try to find ANY string in the object that looks like a URL
+          const allValues: Array<{ key: string; value: unknown; type: string }> = [];
+          const getAllValues = (obj: Record<string, unknown>, prefix = ''): void => {
+            for (const [key, value] of Object.entries(obj)) {
+              const fullKey = prefix ? `${prefix}.${key}` : key;
+              allValues.push({ key: fullKey, value, type: typeof value });
+              
+              if (typeof value === 'object' && value !== null && value !== obj) {
+                try {
+                  getAllValues(value as Record<string, unknown>, fullKey);
+                } catch (e) {
+                  // Avoid circular references
+                }
+              }
+            }
+          };
+          
+          try {
+            getAllValues(objItem as Record<string, unknown>);
+          } catch (e) {
+            logger.debug(`Error getting all values at index ${index}`, { error: String(e) });
+          }
+          
+          // Look for URL patterns in all values
+          for (const { key, value, type } of allValues) {
+            if (type === 'string' && typeof value === 'string') {
+              if (value.startsWith('http') || value.includes('replicate') || value.includes('.png') || value.includes('.jpg') || value.includes('.webp')) {
+                logger.debug(`Found potential URL in deep property '${key}' at index ${index}`, { url: value });
+                urls.push(value);
+                foundUrl = true;
+                break;
+              }
+            }
+          }
+          
+          if (!foundUrl) {
+            logger.error(`Could not extract URL from object at index ${index} - COMPREHENSIVE ANALYSIS`, {
+              objectKeys: Object.keys(objItem),
+              constructorName: item.constructor?.name,
+              isFile: item instanceof File,
+              hasType: 'type' in objItem,
+              hasSize: 'size' in objItem,
+              hasStream: 'stream' in objItem,
+              allStringValues: allValues.filter(v => v.type === 'string').map(v => ({ key: v.key, value: String(v.value).substring(0, 100) })),
+              objectPrototype: Object.getPrototypeOf(item)?.constructor?.name,
+              index
+            });
+          }
         }
       }
 
@@ -223,8 +353,25 @@ export const extractImageUrls = (output: unknown[]): string[] => {
 
   logger.debug("extractImageUrls: Final result", {
     foundUrls: urls.length,
-    urls: urls.map(url => url.substring(0, 100))
+    urls: urls.map(url => url.substring(0, 100)),
+    inputLength: output.length,
+    successRate: `${urls.length}/${output.length}`,
   });
+
+  // If we found no URLs, log a critical error with full details
+  if (urls.length === 0 && output.length > 0) {
+    logger.error("CRITICAL: No URLs extracted from any output items", {
+      totalItems: output.length,
+      itemSummary: output.map((item, i) => ({
+        index: i,
+        type: typeof item,
+        constructor: item?.constructor?.name,
+        isString: typeof item === 'string',
+        stringValue: typeof item === 'string' ? item : null
+      })),
+      rawOutput: JSON.stringify(output, null, 2).substring(0, 2000) + '...'
+    });
+  }
 
   return urls;
 };

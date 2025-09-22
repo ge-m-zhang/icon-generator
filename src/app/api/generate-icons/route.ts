@@ -55,7 +55,6 @@ export const POST = async (request: NextRequest) => {
     const iconSet = await generateIconSet(
       prompt,
       style,
-      undefined,
       openaiConfig
     );
     const timestamp = Date.now();
