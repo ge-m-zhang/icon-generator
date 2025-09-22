@@ -52,7 +52,9 @@ function getEnvironment(): Environment {
 /**
  * Get validated environment variable for specific service
  */
-export function getValidatedEnvVar(key: keyof Environment): string {
+export function getValidatedEnvVar<K extends keyof Environment>(
+  key: K
+): NonNullable<Environment[K]> {
   const value = environment[key];
   if (value === undefined || value === null || value === "") {
     throw new Error(
@@ -60,7 +62,7 @@ export function getValidatedEnvVar(key: keyof Environment): string {
         "Please check your .env.local file."
     );
   }
-  return String(value);
+  return value as NonNullable<Environment[K]>;
 }
 
 // Create and export the environment configuration

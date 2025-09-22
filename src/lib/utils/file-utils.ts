@@ -120,18 +120,25 @@ export const formatIconFilename = (
     );
   }
 
+  // Validate that original strings contain at least one alphanumeric character
+  if (!/[a-zA-Z0-9]/.test(item)) {
+    throw new Error(
+      "Item name must contain at least one alphanumeric character"
+    );
+  }
+
+  if (!/[a-zA-Z0-9]/.test(style)) {
+    throw new Error(
+      "Style name must contain at least one alphanumeric character"
+    );
+  }
+
   const cleanItem = item.toLowerCase().replace(/[^a-z0-9]/g, "-");
   const cleanStyle = style.toLowerCase().replace(/[^a-z0-9]/g, "-");
 
   // Remove multiple consecutive dashes and trim
   const sanitizedItem = cleanItem.replace(/-+/g, "-").replace(/^-|-$/g, "");
   const sanitizedStyle = cleanStyle.replace(/-+/g, "-").replace(/^-|-$/g, "");
-
-  if (!sanitizedItem || !sanitizedStyle) {
-    throw new Error(
-      "Item and style names must contain at least one alphanumeric character"
-    );
-  }
 
   return `${sanitizedItem}-${sanitizedStyle}-icon.${format}`;
 };

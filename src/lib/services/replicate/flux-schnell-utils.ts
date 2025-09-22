@@ -59,7 +59,7 @@ export const createFluxError = (
 
 // Output processing
 export const extractImageUrls = (output: unknown[]): string[] => {
-  if (!output?.length) return [];
+  if (!Array.isArray(output) || !output.length) return [];
 
   return output.map((item, index) => {
     if (typeof item === "string") return item;

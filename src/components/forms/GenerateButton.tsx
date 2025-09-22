@@ -17,11 +17,22 @@ export const GenerateButton = ({
   disabled = false,
   prompt,
 }: GenerateButtonProps) => {
-  const isDisabled = disabled || isLoading || prompt.length < 2 || prompt.length > 30;
+  const isDisabled =
+    disabled || isLoading || prompt.length < 2 || prompt.length > 30;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Only trigger if Enter is pressed and not from an input field
       if (event.key === "Enter" && !isDisabled) {
+        const target = event.target as HTMLElement;
+        // Don't trigger if the focus is on an input, textarea, or contenteditable element
+        if (
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.contentEditable === "true"
+        ) {
+          return;
+        }
         onGenerate();
       }
     };

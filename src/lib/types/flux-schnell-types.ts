@@ -46,12 +46,7 @@ export interface FluxPrediction extends ReplicatePrediction {
 export interface FluxSchnellClientConfig {
   apiToken: string;
   timeout?: number;
-  maxPollingTimeout?: number;
-  pollingInterval?: number;
-  rateLimit?: number;
   maxRetries?: number;
-  baseRetryDelay?: number;
-  enableLogging?: boolean;
 }
 
 // Application-specific types (not in SDK)
