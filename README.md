@@ -107,3 +107,19 @@ The application is deployed on Vercel and configured for production use:
 - **Monitoring**: Comprehensive logging with Winston
 - **Error Handling**: Graceful fallbacks and user feedback
 
+
+
+## 🔮 Potential Improvements
+
+- [ ] **Custom Colors**: Allow users to specify color palettes
+- [ ] **Additional Styles**: Add Minimal, Isometric, or Hand-drawn styles  
+- [ ] **Export Formats**: Support SVG and JPG formats
+- [ ] **Bulk Download**: ZIP download for entire icon sets
+- [ ] **Caching**: Reduce API costs with intelligent caching
+- [ ] **Better Testing**: Improve test coverage from 16% to 70%+
+- [ ] **E2E Testing**: More testing coverage and End-to-end testing 
+
+## 🤝 Contributing
+
+Contributions welcome! Help needed with testing, new styles, and performance optimization.
+
