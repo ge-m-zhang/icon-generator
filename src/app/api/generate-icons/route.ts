@@ -51,7 +51,7 @@ export const POST = async (request: NextRequest) => {
       };
     }
 
-    const iconSet = await generateIconSet(prompt, style, openaiConfig);
+    const iconSet = await generateIconSet(prompt, style, undefined, openaiConfig);
     const timestamp = Date.now();
 
     // Initialize FluxSchnell client for real image generation
