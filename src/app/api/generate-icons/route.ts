@@ -30,7 +30,7 @@ export const POST = async (request: NextRequest) => {
       );
     }
 
-    // Use the simplified icon generation service
+    // Use the simplified icon generation service with fallback support
     let openaiConfig;
     try {
       const openaiApiKey = getValidatedEnvVar("OPENAI_API_KEY");
@@ -38,26 +38,20 @@ export const POST = async (request: NextRequest) => {
         openaiApiKey,
         fallbackMode: false,
       };
+      logger.debug("Using OpenAI for item expansion");
     } catch (error) {
-      logger.error(
-        "Environment configuration error - Missing OpenAI API key:",
-        error
+      // Allow fallback mode when OpenAI key is missing during development
+      logger.warn(
+        "OpenAI API key not found - using fallback items for development",
+        { error: error instanceof Error ? error.message : String(error) }
       );
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Service configuration error: Missing OpenAI API key",
-        },
-        { status: 500 }
-      );
+      openaiConfig = {
+        openaiApiKey: undefined,
+        fallbackMode: true,
+      };
     }
 
-    const iconSet = await generateIconSet(
-      prompt,
-      style,
-      undefined, // colors parameter
-      openaiConfig
-    );
+    const iconSet = await generateIconSet(prompt, style, openaiConfig);
     const timestamp = Date.now();
 
     // Initialize FluxSchnell client for real image generation
