@@ -94,6 +94,7 @@ Choose your style and describe what you need.`}
           <PromptInput
             value={prompt}
             onChange={handlePromptChange}
+            onEnterPress={handleGenerate}
             disabled={isLoading}
             error={error}
           />
