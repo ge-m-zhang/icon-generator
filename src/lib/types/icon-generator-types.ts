@@ -7,7 +7,7 @@
  * Union type representing the available preset style identifiers.
  * Each ID corresponds to a specific visual style for icon generation.
  */
-export type PresetStyleId = "Business" | "Cartoon" | "ThreeDModel" | "Gradient";
+export type PresetStyleId = "Cartoon" | "ThreeDModel" | "Gradient";
 
 /**
  * Simplified style preset configuration for icon generation.

@@ -36,9 +36,10 @@ export const PromptInput = ({
 
     setInternalError(validationError);
 
-    const isValid = !validationError && newValue.length >= 2 && newValue.length <= 30;
+    const isValid =
+      !validationError && newValue.length >= 2 && newValue.length <= 30;
 
-    console.log('Prompt input changed:', {
+    console.log("Prompt input changed:", {
       value: newValue,
       length: newValue.length,
       isValid,
@@ -76,7 +77,7 @@ export const PromptInput = ({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         disabled={disabled}
-        placeholder="e.g., hockey, cooking, music"
+        placeholder="e.g., hockey, dog, cooking"
         helperText={
           displayError ||
           `Describe what kind of icons you want (2-30 characters) • ${value.length}/30`

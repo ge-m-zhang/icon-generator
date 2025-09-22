@@ -21,7 +21,7 @@ export const IconGeneratorForm = ({
   isLoading = false,
 }: IconGeneratorFormProps) => {
   const [prompt, setPrompt] = useState("");
-  const [style, setStyle] = useState<PresetStyleId>("Business");
+  const [style, setStyle] = useState<PresetStyleId>("Cartoon");
   const [error, setError] = useState("");
 
   const handleGenerate = () => {
