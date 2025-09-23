@@ -2,7 +2,7 @@
 
 Generate professional icon sets using AI. Create 8 consistent, themed icons in multiple styles using OpenAI and Replicate Flux-Schnell.
 
-🌐 **[Live Demo](https://icon-generator-f7n02c47s-melodys-projects-b4357c60.vercel.app/)** - Try it now!
+🌐 **[Live Demo](icon-generator-ivory.vercel.app)** - Try it now!
 
 ![AI Icon Styles](public/images/style-examples.png)
 
