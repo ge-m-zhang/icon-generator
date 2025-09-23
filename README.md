@@ -120,7 +120,4 @@ The application is deployed on Vercel and configured for production use:
 - [ ] **Better Testing**: Improve test coverage from 16% to 70%+
 - [ ] **E2E Testing**: More testing coverage and End-to-end testing 
 
-## 🤝 Contributing
-
-Contributions welcome! Help needed with testing, new styles, and performance optimization.
 
