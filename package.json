@@ -25,7 +25,7 @@
   "bugs": {
     "url": "https://github.com/ge-m-zhang/icon-generator/issues"
   },
-  "homepage": "https://icon-generator-f7n02c47s-melodys-projects-b4357c60.vercel.app/",
+  "homepage": "https://icon-generator-ivory.vercel.app/",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
