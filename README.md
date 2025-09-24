@@ -54,6 +54,7 @@ Open [http://localhost:3000](http://localhost:3000) and start generating!
 - **Language**: TypeScript
 - **Testing**: Jest + Testing Library
 
+
 ## 📚 API
 
 **POST** `/api/generate-icons`
@@ -72,6 +73,7 @@ Open [http://localhost:3000](http://localhost:3000) and start generating!
   metadata: { originalPrompt: string; style: string; generatedItems: string[]; };
 }
 ```
+
 
 ## 💰 Cost
 
@@ -98,6 +100,7 @@ The application is built with a clean, maintainable architecture:
 - **Type Safety**: Comprehensive TypeScript definitions throughout
 - **Testing**: Jest + React Testing Library for reliability
 
+
 ## 🚀 Deployment
 
 The application is deployed on Vercel and configured for production use:
@@ -109,7 +112,7 @@ The application is deployed on Vercel and configured for production use:
 
 
 
-## 🔮 Potential Improvements
+## 🔮 Future Improvements
 
 - [ ] **Custom Colors**: Allow users to specify color palettes
 - [ ] **Additional Styles**: Add Minimal, Isometric, or Hand-drawn styles  
@@ -119,5 +122,12 @@ The application is deployed on Vercel and configured for production use:
 - [ ] **AI Orchestration**: Smart coordination between OpenAI and Replicate services
 - [ ] **Better Testing**: Improve test coverage from 16% to 70%+
 - [ ] **E2E Testing**: More testing coverage and End-to-end testing 
+
+
+## 🌐 Accessibility
+
+A11y was not part of the project requirements, so this app focuses on the AI icon workflow.  
+The UI library (`@gmzh/react-ui`) uses semantic HTML and includes ARIA helpers which are ready to be applied more broadly. 
+Future updates will wire in these utilities (labels, keyboard support, live regions, contrast tokens) so the app can meet WCAG 2.1 AA without major changes.
 
 
