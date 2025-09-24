@@ -61,7 +61,7 @@ export const EmptyState = () => {
         className="border border-gray-200"
       >
         <Typography variant="h4" color="muted" align="center">
-          Enter a prompt above to generate icons
+          Enter a prompt to generate icons
         </Typography>
       </Box>
     </Box>
